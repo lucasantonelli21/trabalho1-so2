@@ -58,7 +58,11 @@ int main(int argc, char *argv[]) {
             // Atualizar estatísticas gerais
             WaitForSingleObject(hMutex, INFINITE);
             shm->total_batalhas++;
-            if (request.prioridade > 0) {
+            int injured = request.prioridade > 0;
+            if (!injured) {
+                injured = (rand() % 2) == 0;
+            }
+            if (injured) {
                 shm->pokemon_feridos++;
             }
             shm->arenas_ocupadas--;

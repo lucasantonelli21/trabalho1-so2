@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
     shm->trainers_active++;
     ReleaseMutex(hMutex);
     
-    char *tipos[] = {"Fogo", "Água", "Planta", "Elétrico", "Psíquico"};
+    char *tipos[] = {"Fogo", "Agua", "Planta", "Eletrico", "Psiquico"};
     char *nomes[] = {"Charmander", "Squirtle", "Bulbasaur", "Pikachu", "Abra"};
     
     srand((unsigned int)time(NULL) + trainer_id);
@@ -53,13 +53,13 @@ int main(int argc, char *argv[]) {
         strncpy(request.tipo, tipos[rand() % 5], sizeof(request.tipo) - 1);
         request.tipo[sizeof(request.tipo) - 1] = '\0';
         request.nivel = rand() % 50 + 1;
-        request.prioridade = rand() % 10 == 0 ? 1 : 0; // 10% de chance de ser ferido
+        request.prioridade = (rand() % 2) == 0 ? 1 : 0;
         request.arena_destino = rand() % 3;
         request.timestamp = time(NULL);
         request.processado = 0;
         
         if (produzir_pokemon(shm, request)) {
-            printf("Treinador %d enviou %s (Nível %d) para Arena %d\n", 
+            printf("Treinador %d enviou %s (Nivel %d) para Arena %d\n", 
                    trainer_id, request.nome, request.nivel, request.arena_destino);
         } else {
             printf("Treinador %d: Buffer cheio, aguardando...\n", trainer_id);

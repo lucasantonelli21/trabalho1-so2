@@ -1,0 +1,90 @@
+## Regras gerais de ignore para este repositório (.NET + C/Win32)
+
+# IDEs e metadados
+.vs/
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.VC.db
+*.VC.VC.opendb
+
+# Saídas de build (cobrem .NET e C)
+[Bb]in/
+[Oo]bj/
+Debug/
+Release/
+x64/
+x86/
+[Aa][Rr][Mm]/
+build/
+out/
+[Ll]og/
+[Ll]ogs/
+ipch/
+
+# MSVC/C++ intermediates
+*.idb
+*.iobj
+*.ipdb
+*.tlog
+*.lastbuildstate
+*.lastcodeanalysissucceeded
+*.opensdf
+*.sdf
+*.sbr
+*.pch
+
+# Artefatos de compilação comuns
+*.ilk
+*.pdb
+*.mdb
+*.cache
+*.tmp
+*.log
+*.tlog
+
+# Executáveis e bibliotecas gerados (não versionar)
+*.exe
+*.dll
+*.so
+*.dylib
+*.out
+*.app
+
+# .NET artefatos de execução/empacotamento
+*.deps.json
+*.runtimeconfig.json
+*.runtimeconfig.dev.json
+artifacts/
+project.lock.json
+project.fragment.lock.json
+
+# NuGet
+*.nupkg
+*.snupkg
+**/packages/*
+!**/packages/build/
+.nuget/
+
+# Testes e cobertura
+TestResult*/
+*.coverage
+*.coveragexml
+coverage/
+
+# Sistema operacional
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.bak
+
+# Arquivos de sessão/performance do VS
+*.psess
+*.vsp
+*.vspx
+
+# Arquivos específicos que não devem ser versionados
+PokemonMonitorApp/PokemonMonitorApp.csproj.user

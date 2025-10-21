@@ -6,6 +6,14 @@ HANDLE hSemEmpty = NULL;
 HANDLE hSemFull = NULL;
 SharedMemory* shm = NULL;
 
+static void close_all_handles_on_error() {
+    if (shm) { UnmapViewOfFile(shm); shm = NULL; }
+    if (hMapFile) { CloseHandle(hMapFile); hMapFile = NULL; }
+    if (hSemEmpty) { CloseHandle(hSemEmpty); hSemEmpty = NULL; }
+    if (hSemFull) { CloseHandle(hSemFull); hSemFull = NULL; }
+    if (hMutex) { CloseHandle(hMutex); hMutex = NULL; }
+}
+
 HANDLE create_semaphore_with_count(LPCSTR name, int initial_count, int max_count) {
     return CreateSemaphoreA(
         NULL,           // default security attributes
@@ -20,6 +28,7 @@ SharedMemory* setup_shared_memory() {
     hMutex = CreateMutexA(NULL, FALSE, MUTEX_NAME);
     if (hMutex == NULL) {
         printf("Erro ao criar mutex: %d\n", GetLastError());
+        close_all_handles_on_error();
         return NULL;
     }
 
@@ -29,6 +38,7 @@ SharedMemory* setup_shared_memory() {
     
     if (hSemEmpty == NULL || hSemFull == NULL) {
         printf("Erro ao criar semáforos: %d\n", GetLastError());
+        close_all_handles_on_error();
         return NULL;
     }
 
@@ -44,6 +54,7 @@ SharedMemory* setup_shared_memory() {
 
     if (hMapFile == NULL) {
         printf("Erro ao criar file mapping: %d\n", GetLastError());
+        close_all_handles_on_error();
         return NULL;
     }
 
@@ -57,7 +68,7 @@ SharedMemory* setup_shared_memory() {
 
     if (shm == NULL) {
         printf("Erro ao mapear view of file: %d\n", GetLastError());
-        CloseHandle(hMapFile);
+        close_all_handles_on_error();
         return NULL;
     }
 
@@ -75,12 +86,18 @@ SharedMemory* setup_shared_memory() {
     return shm;
 }
 
-void cleanup_shared_memory(SharedMemory* shm) {
-    if (shm) UnmapViewOfFile(shm);
-    if (hMapFile) CloseHandle(hMapFile);
-    if (hMutex) CloseHandle(hMutex);
-    if (hSemEmpty) CloseHandle(hSemEmpty);
-    if (hSemFull) CloseHandle(hSemFull);
+void cleanup_shared_memory(SharedMemory* shm_ptr) {
+    if (shm_ptr) { UnmapViewOfFile(shm_ptr); }
+    if (hMapFile) { CloseHandle(hMapFile); }
+    if (hMutex) { CloseHandle(hMutex); }
+    if (hSemEmpty) { CloseHandle(hSemEmpty); }
+    if (hSemFull) { CloseHandle(hSemFull); }
+
+    shm = NULL;
+    hMapFile = NULL;
+    hMutex = NULL;
+    hSemEmpty = NULL;
+    hSemFull = NULL;
 }
 
 int produzir_pokemon(SharedMemory *shm, PokemonRequest request) {
