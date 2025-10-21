@@ -2,7 +2,12 @@
 
 Este projeto contém processos em C (master_controller, trainer, arena) e um monitor gráfico em C# (WinForms) que se comunicam via memória compartilhada.
 
-## Requisitos
+## Grupo
+- Carlos Eduardo Watanabe Nunes
+- Lucas Barbosa Antonelli
+- Lucas Medolla de Paula
+
+## Requisitos do Sistema
 
 - PowerShell (já incluso no Windows)
 - MinGW GCC instalado e no PATH (ex.: C:\MinGW\bin)
