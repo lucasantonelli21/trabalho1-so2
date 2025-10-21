@@ -5,7 +5,7 @@ Este projeto contém processos em C (master_controller, trainer, arena) e um mon
 ## Grupo
 - Carlos Eduardo Watanabe Nunes
 - Lucas Barbosa Antonelli
-- Lucas Medolla de Paula
+- Lucasde Paula Carvalho Medolla
 
 ## Link do Vídeo de Apresentação
 [Assista Aqui](https://drive.google.com/file/d/1PV0xgZvKwyJmXftFN-rM1QxOpmuop-nH/view?usp=sharing)
