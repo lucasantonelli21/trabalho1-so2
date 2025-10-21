@@ -7,6 +7,9 @@ Este projeto contém processos em C (master_controller, trainer, arena) e um mon
 - Lucas Barbosa Antonelli
 - Lucas Medolla de Paula
 
+## Link do Vídeo de Apresentação
+[Assista Aqui](https://drive.google.com/file/d/1PV0xgZvKwyJmXftFN-rM1QxOpmuop-nH/view?usp=sharing)
+
 ## Requisitos do Sistema
 
 - PowerShell (já incluso no Windows)
