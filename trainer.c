@@ -33,8 +33,15 @@ int main(int argc, char *argv[]) {
     shm->trainers_active++;
     ReleaseMutex(hMutex);
     
-    char *tipos[] = {"Fogo", "Agua", "Planta", "Eletrico", "Psiquico"};
-    char *nomes[] = {"Charmander", "Squirtle", "Bulbasaur", "Pikachu", "Abra"};
+    typedef struct { const char* nome; const char* tipo; } Species;
+    Species species[] = {
+        {"Charmander", "Fogo"},
+        {"Squirtle",   "Agua"},
+        {"Bulbasaur",  "Planta"},
+        {"Pikachu",    "Eletrico"},
+        {"Abra",       "Psiquico"}
+    };
+    int speciesCount = (int)(sizeof(species) / sizeof(species[0]));
     
     srand((unsigned int)time(NULL) + trainer_id);
     
@@ -48,9 +55,10 @@ int main(int argc, char *argv[]) {
         
         PokemonRequest request;
         request.pokemon_id = rand() % 1000;
-        strncpy(request.nome, nomes[rand() % 5], sizeof(request.nome) - 1);
-        request.nome[sizeof(request.nome) - 1] = '\0';
-        strncpy(request.tipo, tipos[rand() % 5], sizeof(request.tipo) - 1);
+    int idx = rand() % speciesCount;
+    strncpy(request.nome, species[idx].nome, sizeof(request.nome) - 1);
+    request.nome[sizeof(request.nome) - 1] = '\0';
+    strncpy(request.tipo, species[idx].tipo, sizeof(request.tipo) - 1);
         request.tipo[sizeof(request.tipo) - 1] = '\0';
         request.nivel = rand() % 50 + 1;
         request.prioridade = (rand() % 2) == 0 ? 1 : 0;
