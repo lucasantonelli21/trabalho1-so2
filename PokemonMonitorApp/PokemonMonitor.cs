@@ -97,7 +97,7 @@ namespace PokemonMonitor
             queueListView.Columns.Add("ID", 80);
             queueListView.Columns.Add("Nome", 100);
             queueListView.Columns.Add("Tipo", 80);
-            queueListView.Columns.Add("Nível", 60);
+            queueListView.Columns.Add("Nivel", 60);
             queueListView.Columns.Add("Prioridade", 80);
             queueListView.Columns.Add("Arena", 60);
             queueListView.Columns.Add("Timestamp", 120);

@@ -11,7 +11,7 @@ BOOL WINAPI console_handler(DWORD signal) {
 }
 
 void simular_batalha(PokemonRequest pokemon, int arena_id) {
-    printf("Arena %d: Iniciando batalha com %s (Nível %d, Prioridade: %d)\n", 
+    printf("Arena %d: Iniciando batalha com %s (Nivel %d, Prioridade: %d)\n", 
            arena_id, pokemon.nome, pokemon.nivel, pokemon.prioridade);
     Sleep(rand() % 3000 + 2000); // 2-5 segundos para batalha
     printf("Arena %d: Batalha com %s concluída\n", arena_id, pokemon.nome);

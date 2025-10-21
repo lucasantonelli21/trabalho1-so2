@@ -58,6 +58,9 @@ SharedMemory* setup_shared_memory() {
         return NULL;
     }
 
+    DWORD mappingLastError = GetLastError();
+    BOOL mappingAlreadyExists = (mappingLastError == ERROR_ALREADY_EXISTS);
+
     shm = (SharedMemory*)MapViewOfFile(
         hMapFile,   // handle to map object
         FILE_MAP_ALL_ACCESS, // read/write permission
@@ -73,7 +76,7 @@ SharedMemory* setup_shared_memory() {
     }
 
     // Inicializar se for o primeiro processo
-    if (GetLastError() != ERROR_ALREADY_EXISTS) {
+    if (!mappingAlreadyExists) {
         memset(shm, 0, sizeof(SharedMemory));
         shm->front = 0;
         shm->rear = 0;
