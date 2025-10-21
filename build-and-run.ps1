@@ -7,6 +7,15 @@ Write-Host ""
 # Adicionar MinGW ao PATH temporariamente
 $env:Path = "C:\MinGW\bin;" + $env:Path
 
+# Raiz do script (para resolver caminhos de forma confiavel)
+if ($PSScriptRoot) {
+    $ScriptRoot = $PSScriptRoot
+} elseif ($MyInvocation -and $MyInvocation.MyCommand -and $MyInvocation.MyCommand.Path) {
+    $ScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+} else {
+    $ScriptRoot = (Get-Location).Path
+}
+
 # Verificar se GCC esta disponivel
 Write-Host "Verificando compilador..." -ForegroundColor Yellow
 $gccVersion = & gcc --version 2>&1 | Select-Object -First 1
@@ -56,11 +65,13 @@ Write-Host ""
 # Compilar o monitor C#
 Write-Host "Compilando monitor C# (PokemonMonitor)..." -ForegroundColor Yellow
 
-# Checar .NET e Desktop Runtime instalados (exibe aviso se faltar)
+# Checar .NET e Desktop Runtime/SDK instalados (exibe aviso se faltar)
 & dotnet --list-runtimes > $null 2>&1
 $hasDotnet = ($LASTEXITCODE -eq 0)
+& dotnet --list-sdks > $null 2>&1
+$hasSdk = ($LASTEXITCODE -eq 0)
 if (-not $hasDotnet) {
-    Write-Host "  .NET SDK nao encontrado - Monitor C# nao sera compilado" -ForegroundColor Yellow
+    Write-Host "  .NET nao encontrado - Monitor C# nao sera compilado" -ForegroundColor Yellow
 } else {
     $runtimes = & dotnet --list-runtimes
     $hasWinDesktop = $false
@@ -72,25 +83,36 @@ if (-not $hasDotnet) {
         Write-Host "  Se o executavel reclamar do runtime, instale: https://aka.ms/dotnet/8/desktop/runtime" -ForegroundColor DarkYellow
     }
 
-    if (Test-Path "PokemonMonitorApp\PokemonMonitorApp.csproj") {
-        Write-Host "  Compilando PokemonMonitor..." -ForegroundColor Cyan
-        Push-Location PokemonMonitorApp
-        & dotnet build -c Release > $null 2>&1
-        if ($LASTEXITCODE -eq 0) {
-            $buildDir = "bin\Release\net8.0-windows"
-            $srcExe = Join-Path $buildDir "PokemonMonitorApp.exe"
-            $srcDeps = Join-Path $buildDir "PokemonMonitorApp.deps.json"
-            $srcRuntimeCfg = Join-Path $buildDir "PokemonMonitorApp.runtimeconfig.json"
+    $pmProjectPath = Join-Path $ScriptRoot "PokemonMonitorApp\PokemonMonitorApp.csproj"
+    if (-not (Test-Path -PathType Leaf $pmProjectPath)) {
+        $pmFolder = Join-Path $ScriptRoot "PokemonMonitorApp"
+        if (Test-Path $pmFolder) {
+            $candidate = Get-ChildItem -Path $pmFolder -Filter *.csproj -File -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($candidate) { $pmProjectPath = $candidate.FullName }
+        }
+    }
 
-            Pop-Location
-            Write-Host "  PokemonMonitorApp (Release) compilado" -ForegroundColor Green
+    if (Test-Path -PathType Leaf $pmProjectPath) {
+        Write-Host "  Projeto encontrado: $pmProjectPath" -ForegroundColor DarkGray
+        if ($hasSdk) {
+            Write-Host "  Compilando PokemonMonitor (Release)..." -ForegroundColor Cyan
+            $buildOut = & dotnet build $pmProjectPath -c Release 2>&1
+            if ($LASTEXITCODE -eq 0) {
+                $pmProjectDir = Split-Path $pmProjectPath -Parent
+                $pmBuildDir = Join-Path $pmProjectDir "bin\Release\net8.0-windows"
+                $pmExeFromBuild = Join-Path $pmBuildDir "PokemonMonitorApp.exe"
+                Write-Host "  PokemonMonitorApp (Release) compilado" -ForegroundColor Green
+            } else {
+                Write-Host "  Falha ao compilar monitor C#" -ForegroundColor Red
+                Write-Host $buildOut -ForegroundColor DarkYellow
+                Write-Host "  O sistema C funcionara normalmente" -ForegroundColor Yellow
+            }
         } else {
-            Pop-Location
-            Write-Host "  Aviso: Falha ao compilar monitor C#" -ForegroundColor Yellow
-            Write-Host "  O sistema C funcionara normalmente" -ForegroundColor Yellow
+            Write-Host "  .NET SDK nao detectado - pulando compilacao do monitor. Instale .NET SDK 8.x para compilar." -ForegroundColor Yellow
+            Write-Host "  Link: https://dotnet.microsoft.com/download/dotnet/8.0" -ForegroundColor DarkYellow
         }
     } else {
-        Write-Host "  Projeto PokemonMonitorApp nao encontrado" -ForegroundColor Yellow
+        Write-Host "  Projeto PokemonMonitorApp nao encontrado em: $pmProjectPath" -ForegroundColor Yellow
     }
 }
 Write-Host ""
@@ -137,9 +159,34 @@ switch ($choice) {
         Write-Host "Iniciando sistema com monitor..." -ForegroundColor Green
         
         # Tenta iniciar o monitor direto da pasta de build (evita erros de runtime)
-        $pmProjectDir = "PokemonMonitorApp"
+        $pmProjectPath = Join-Path $ScriptRoot "PokemonMonitorApp\PokemonMonitorApp.csproj"
+        $pmProjectDir = Split-Path $pmProjectPath -Parent
         $pmBuildDir = Join-Path $pmProjectDir "bin\Release\net8.0-windows"
         $pmExeFromBuild = Join-Path $pmBuildDir "PokemonMonitorApp.exe"
+
+        if (-not (Test-Path $pmExeFromBuild)) {
+            # Se nao existir o exe, tentar compilar agora
+            if (-not (Test-Path -PathType Leaf $pmProjectPath)) {
+                $pmFolder = Join-Path $ScriptRoot "PokemonMonitorApp"
+                if (Test-Path $pmFolder) {
+                    $candidate = Get-ChildItem -Path $pmFolder -Filter *.csproj -File -ErrorAction SilentlyContinue | Select-Object -First 1
+                    if ($candidate) { $pmProjectPath = $candidate.FullName; $pmProjectDir = Split-Path $pmProjectPath -Parent }
+                }
+            }
+            if (Test-Path -PathType Leaf $pmProjectPath) {
+                Write-Host "  Compilando monitor C# (on-demand)..." -ForegroundColor Cyan
+                $buildOut2 = & dotnet build $pmProjectPath -c Release 2>&1
+                if ($LASTEXITCODE -eq 0) {
+                    $pmBuildDir = Join-Path $pmProjectDir "bin\Release\net8.0-windows"
+                    $pmExeFromBuild = Join-Path $pmBuildDir "PokemonMonitorApp.exe"
+                } else {
+                    Write-Host "  Falha ao compilar monitor C#" -ForegroundColor Red
+                    Write-Host $buildOut2 -ForegroundColor DarkYellow
+                }
+            } else {
+                Write-Host "  Projeto PokemonMonitorApp nao encontrado para compilar" -ForegroundColor Yellow
+            }
+        }
 
         if (Test-Path $pmExeFromBuild) {
             # Executa a partir da pasta de build para usar .deps e runtimeconfig corretos
